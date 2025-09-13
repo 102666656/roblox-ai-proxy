@@ -1,3 +1,4 @@
+require('dotenv').config(); // Load .env variables
 const express = require("express");
 const fetch = require("node-fetch"); // node-fetch v2
 const app = express();
@@ -11,13 +12,13 @@ if (!OPENAI_API_KEY) {
 
 app.use(express.json());
 
-// Trim trailing spaces/newlines from URLs
+// Trim trailing spaces/newlines from URLs to prevent %0A issues
 app.use((req, res, next) => {
     req.url = req.url.replace(/[\r\n]+/g, "");
     next();
 });
 
-// GET route for testing
+// GET route for browser testing
 app.get("/", (req, res) => {
     res.send("✅ Proxy server is running. POST to /npc-chat with JSON { message, memory }.");
 });
