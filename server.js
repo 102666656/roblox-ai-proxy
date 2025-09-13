@@ -1,11 +1,12 @@
 require('dotenv').config();
 const express = require("express");
-const fetch = require("node-fetch");
+const fetch = require("node-fetch"); // v2 for CommonJS
 const app = express();
 
 const PORT = process.env.PORT || 8080;
 const AIML_API_KEY = process.env.AIML_API_KEY;
 
+// Parse JSON
 app.use(express.json());
 
 // POST /npc-chat
@@ -17,8 +18,10 @@ app.post("/npc-chat", async (req, res) => {
     }
 
     try {
-        // Call AIMLAPI.com endpoint
-        const apiResponse = await fetch("https://api.aimlapi.com/v1/chat", {
+        // TODO: Replace with your correct AIML API chat endpoint from dashboard
+        const AIML_ENDPOINT = "https://api.aimlapi.com/YOUR_CORRECT_CHAT_ENDPOINT";
+
+        const apiResponse = await fetch(AIML_ENDPOINT, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -31,12 +34,17 @@ app.post("/npc-chat", async (req, res) => {
         });
 
         const data = await apiResponse.json();
-        console.log("AIML API response:", data); // Log the full API response
+        console.log("Full AIML API response:", JSON.stringify(data, null, 2));
 
-        // AIMLAPI returns the reply in `response` field
-        const reply = data.response || "Sorry, I can't respond right now.";
+        // Flexible reply extraction
+        const reply =
+            data.reply ||
+            data.responses?.[0] ||
+            data.response ||
+            "Sorry, I can't respond right now.";
 
         res.json({ reply });
+
     } catch (err) {
         console.error("Error contacting AIML API:", err);
         res.status(500).json({ reply: "Error contacting AIML API.", error: err.toString() });
