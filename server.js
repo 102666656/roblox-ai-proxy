@@ -1,5 +1,5 @@
 const express = require("express");
-const fetch = require("node-fetch");
+const fetch = require("node-fetch"); // v2
 const app = express();
 
 const PORT = process.env.PORT || 8080;
@@ -13,11 +13,11 @@ app.use(express.json());
 
 // Trim trailing spaces/newlines from URLs to prevent %0A issues
 app.use((req, res, next) => {
-    req.url = req.url.trim();
+    req.url = req.url.replace(/[\r\n]+/g, "");
     next();
 });
 
-// GET route for testing in browser
+// GET route for browser testing
 app.get("/", (req, res) => {
     res.send("Proxy server is running. POST to /npc-chat with JSON { message, memory }.");
 });
@@ -77,7 +77,7 @@ app.post("/npc-chat", async (req, res) => {
     }
 });
 
-// Catch-all route for unknown endpoints
+// Catch-all route
 app.all("*", (req, res) => {
     res.status(404).send(`Route not found: ${req.originalUrl}`);
 });
