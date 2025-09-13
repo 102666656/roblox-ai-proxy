@@ -6,13 +6,18 @@ const PORT = process.env.PORT || 8080;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 if (!OPENAI_API_KEY) {
-    console.error("ERROR: OPENAI_API_KEY is not set in environment variables.");
-    // Instead of exiting, we keep the server running to debug
+    console.warn("WARNING: OPENAI_API_KEY is not set. Requests will fail until it is configured.");
 }
 
 app.use(express.json());
 
-// GET route for testing
+// Trim trailing spaces/newlines from URLs to prevent %0A issues
+app.use((req, res, next) => {
+    req.url = req.url.trim();
+    next();
+});
+
+// GET route for testing in browser
 app.get("/", (req, res) => {
     res.send("Proxy server is running. POST to /npc-chat with JSON { message, memory }.");
 });
@@ -72,10 +77,9 @@ app.post("/npc-chat", async (req, res) => {
     }
 });
 
-// Catch-all route
+// Catch-all route for unknown endpoints
 app.all("*", (req, res) => {
     res.status(404).send(`Route not found: ${req.originalUrl}`);
 });
 
 app.listen(PORT, () => console.log(`✅ Proxy server running on port ${PORT}`));
-
