@@ -6,7 +6,6 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const AIML_API_KEY = process.env.AIML_API_KEY;
 
-// Parse JSON
 app.use(express.json());
 
 // POST /npc-chat
@@ -18,8 +17,7 @@ app.post("/npc-chat", async (req, res) => {
     }
 
     try {
-        // TODO: Replace with your correct AIML API chat endpoint from dashboard
-        const AIML_ENDPOINT = "https://api.aimlapi.com/YOUR_CORRECT_CHAT_ENDPOINT";
+        const AIML_ENDPOINT = "https://api.aimlapi.com/v1/gpt-4o/chat"; // Correct endpoint
 
         const apiResponse = await fetch(AIML_ENDPOINT, {
             method: "POST",
@@ -28,6 +26,7 @@ app.post("/npc-chat", async (req, res) => {
                 "Authorization": `Bearer ${AIML_API_KEY}`
             },
             body: JSON.stringify({
+                model: "gpt-4o",
                 message: message,
                 sessionid: sessionid || "default-session"
             })
@@ -41,6 +40,7 @@ app.post("/npc-chat", async (req, res) => {
             data.reply ||
             data.responses?.[0] ||
             data.response ||
+            data.output?.[0]?.content || // in case the API returns an array of outputs
             "Sorry, I can't respond right now.";
 
         res.json({ reply });
