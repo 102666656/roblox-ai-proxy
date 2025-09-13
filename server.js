@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require("express");
-const fetch = require("node-fetch"); // v2 for CommonJS
+const fetch = require("node-fetch");
 const app = express();
 
 const PORT = process.env.PORT || 8080;
@@ -8,16 +8,13 @@ const AIML_API_KEY = process.env.AIML_API_KEY;
 
 app.use(express.json());
 
-// POST /npc-chat
 app.post("/npc-chat", async (req, res) => {
     const { message, sessionid } = req.body;
 
-    if (!message) {
-        return res.status(400).json({ error: "Message is required." });
-    }
+    if (!message) return res.status(400).json({ error: "Message is required." });
 
     try {
-        const AIML_ENDPOINT = "https://api.aimlapi.com/v1/gpt-4o/chat"; // Correct endpoint
+        const AIML_ENDPOINT = "https://api.aimlapi.com/v1/gpt-4o/chat";
 
         const apiResponse = await fetch(AIML_ENDPOINT, {
             method: "POST",
@@ -27,21 +24,23 @@ app.post("/npc-chat", async (req, res) => {
             },
             body: JSON.stringify({
                 model: "gpt-4o",
-                message: message,
-                sessionid: sessionid || "default-session"
+                sessionid: sessionid || "default-session",
+                messages: [
+                    { role: "user", content: message }
+                ]
             })
         });
 
         const data = await apiResponse.json();
         console.log("Full AIML API response:", JSON.stringify(data, null, 2));
 
-        // Flexible reply extraction
-        const reply =
-            data.reply ||
-            data.responses?.[0] ||
-            data.response ||
-            data.output?.[0]?.content || // in case the API returns an array of outputs
-            "Sorry, I can't respond right now.";
+        // Extract the reply (adjust to API response structure)
+        const reply = data.reply ||
+                      data.responses?.[0] ||
+                      data.response ||
+                      data.output?.[0]?.content ||
+                      (data.choices?.[0]?.message?.content) || // in case it uses OpenAI-like structure
+                      "Sorry, I can't respond right now.";
 
         res.json({ reply });
 
@@ -51,10 +50,6 @@ app.post("/npc-chat", async (req, res) => {
     }
 });
 
-// Catch-all route
-app.all("*", (req, res) => {
-    res.status(404).send(`Route not found: ${req.originalUrl}`);
-});
+app.all("*", (req, res) => res.status(404).send(`Route not found: ${req.originalUrl}`));
 
-// Start server
 app.listen(PORT, () => console.log(`✅ AIML Proxy running on port ${PORT}`));
