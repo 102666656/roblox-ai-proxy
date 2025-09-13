@@ -17,7 +17,7 @@ app.post("/npc-chat", async (req, res) => {
     }
 
     try {
-        const apiResponse = await fetch("https://your-aiml-api-endpoint.com/chat", {
+        const apiResponse = await fetch("https://api.aimlapi.com/v1/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
