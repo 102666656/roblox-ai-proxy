@@ -1,25 +1,25 @@
 const express = require("express");
-const fetch = require("node-fetch"); // v2
+const fetch = require("node-fetch"); // node-fetch v2
 const app = express();
 
 const PORT = process.env.PORT || 8080;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 if (!OPENAI_API_KEY) {
-    console.warn("WARNING: OPENAI_API_KEY is not set. Requests will fail until it is configured.");
+    console.warn("⚠️ WARNING: OPENAI_API_KEY is not set. Requests will fail until it is configured.");
 }
 
 app.use(express.json());
 
-// Trim trailing spaces/newlines from URLs to prevent %0A issues
+// Trim trailing spaces/newlines from URLs
 app.use((req, res, next) => {
     req.url = req.url.replace(/[\r\n]+/g, "");
     next();
 });
 
-// GET route for browser testing
+// GET route for testing
 app.get("/", (req, res) => {
-    res.send("Proxy server is running. POST to /npc-chat with JSON { message, memory }.");
+    res.send("✅ Proxy server is running. POST to /npc-chat with JSON { message, memory }.");
 });
 
 // POST /npc-chat route
@@ -37,6 +37,7 @@ app.post("/npc-chat", async (req, res) => {
     console.log("Memory:", memoryArr);
 
     if (!OPENAI_API_KEY) {
+        console.error("❌ OpenAI API key not set. Cannot call OpenAI.");
         return res.status(500).json({ reply: "OpenAI API key is not set on server." });
     }
 
@@ -82,4 +83,5 @@ app.all("*", (req, res) => {
     res.status(404).send(`Route not found: ${req.originalUrl}`);
 });
 
+// Start server
 app.listen(PORT, () => console.log(`✅ Proxy server running on port ${PORT}`));
