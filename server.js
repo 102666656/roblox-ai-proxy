@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require("express");
-const fetch = require("node-fetch"); // v2 for CommonJS
+const fetch = require("node-fetch");
 const app = express();
 
 const PORT = process.env.PORT || 8080;
@@ -17,6 +17,7 @@ app.post("/npc-chat", async (req, res) => {
     }
 
     try {
+        // Call AIMLAPI.com endpoint
         const apiResponse = await fetch("https://api.aimlapi.com/v1/chat", {
             method: "POST",
             headers: {
@@ -30,8 +31,10 @@ app.post("/npc-chat", async (req, res) => {
         });
 
         const data = await apiResponse.json();
-        // Adjust depending on your AIML API response format
-        const reply = data.reply || "Sorry, I can't respond right now.";
+        console.log("AIML API response:", data); // Log the full API response
+
+        // AIMLAPI returns the reply in `response` field
+        const reply = data.response || "Sorry, I can't respond right now.";
 
         res.json({ reply });
     } catch (err) {
